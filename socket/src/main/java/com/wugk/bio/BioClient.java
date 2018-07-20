@@ -17,30 +17,35 @@ public class BioClient {
         try {
             //1.创建客户端Socket，指定服务器地址和端口
             Socket socket=new Socket("localhost", 8080);
+            socket.setSoTimeout(240000);
+            socket.setKeepAlive(true);
             //2.获取输出流，向服务器端发送信息
-            OutputStream os=socket.getOutputStream();//字节输出流
-            PrintWriter pw=new PrintWriter(os);//将输出流包装为打印流
+            OutputStream output = socket.getOutputStream();//字节输出流
+            PrintWriter pw=new PrintWriter(output);//将输出流包装为打印流
             //3.获取输入流，并读取服务器端的响应信息
-            InputStream is=socket.getInputStream();
-            BufferedReader br=new BufferedReader(new InputStreamReader(is));
-            String info=null;
-            byte buffer[] = new byte[256];
-            System.out.println("Please input:");
-            System.in.read(buffer);
-            pw.write(new String(buffer));
-            pw.flush();
-            socket.shutdownOutput();//关闭输出流
-            while ((info = br.readLine()) != null) {
-                System.out.println("我是客户端，服务器说：" + info);
-            }
 
+            byte bufferIn[] = new byte[256];
+            System.out.println("Please input:");
+            System.in.read(bufferIn);
+            pw.write(new String(bufferIn));
+            pw.flush();
+
+            InputStream input=socket.getInputStream();
+            int curRevLen = 0;
+            byte buffer[] = new byte[20];
+            int e = buffer.length - curRevLen;
+            int realLen = input.read(buffer, 0, e);
+            ByteBuffer byteBuffer = ByteBuffer.allocate(1000);
+            while (realLen > 0) {
+
+                for (int i = 0; i < realLen; i++) {
+                    byteBuffer.put(buffer[i]);
+                }
+            }
+            System.out.println("Sever said:" + new String(byteBuffer.array()));
 
 
             //4.关闭资源
-            br.close();
-            is.close();
-            pw.close();
-            os.close();
             socket.close();
         } catch (UnknownHostException e) {
             e.printStackTrace();

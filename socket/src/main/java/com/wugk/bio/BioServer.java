@@ -29,7 +29,7 @@ public class BioServer {
                 //创建一个新的线程
                 ServerThread serverThread=new ServerThread(socket);
                 //启动线程
-                serverThread.start();
+                serverThread.init().start();
 
                 count++;//统计客户端的数量
                 System.out.println("客户端的数量："+count);
